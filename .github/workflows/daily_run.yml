@@ -1,0 +1,31 @@
+name: Daily Stock Screener
+
+on:
+  schedule:
+    # 台灣時間週一至週五 18:30 自動執行 (UTC 時間為 10:30)
+    - cron: '30 10 * * 1-5'
+  workflow_dispatch: # 支援在 GitHub 網頁上手動點擊立即測試
+
+jobs:
+  run-screener:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 取得專案檔案
+        uses: actions/checkout@v4
+
+      - name: 設定 Python 環境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安裝所需套件
+        run: |
+          pip install pandas requests yfinance
+
+      - name: 執行選股腳本並寄信
+        env:
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+        run: |
+          python stock_screener.py
